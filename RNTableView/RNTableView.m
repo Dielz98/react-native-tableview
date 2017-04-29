@@ -94,6 +94,7 @@
         _autoFocus = YES;
         _autoFocusAnimate = YES;
         _allowsToggle = NO;
+        _autoSelection = YES;
         _allowsMultipleSelection = NO;
     }
     return self;
@@ -476,18 +477,21 @@ RCT_NOT_IMPLEMENTED(-initWithCoder:(NSCoder *)aDecoder)
      * otherwise, add selection to the new row and remove selection from old row if multiple is not allowed.
      * default: allowMultipleSelection:false and allowToggle: false
      */
-    if ((oldValue[@"selected"] && [oldValue[@"selected"] intValue]) || self.selectedValue){
-        if (_allowsToggle && newValue[@"selected"] && [newValue[@"selected"] intValue]) {
-            [newValue removeObjectForKey:@"selected"];
-        } else {
-            if (!_allowsMultipleSelection) {
-                [oldValue removeObjectForKey:@"selected"];
+    if (_autoSelection)
+    {
+        if ((oldValue[@"selected"] && [oldValue[@"selected"] intValue]) || self.selectedValue){
+            if (_allowsToggle && newValue[@"selected"] && [newValue[@"selected"] intValue]) {
+                [newValue removeObjectForKey:@"selected"];
+            } else {
+                if (!_allowsMultipleSelection) {
+                    [oldValue removeObjectForKey:@"selected"];
+                }
+                [newValue setObject:@1 forKey:@"selected"];
             }
-            [newValue setObject:@1 forKey:@"selected"];
+            [self.tableView reloadData];
         }
-        [self.tableView reloadData];
     }
-
+    
     [_eventDispatcher sendInputEventWithName:@"press" body:newValue];
     self.selectedIndexes[indexPath.section] = [NSNumber numberWithInteger:indexPath.item];
 }
